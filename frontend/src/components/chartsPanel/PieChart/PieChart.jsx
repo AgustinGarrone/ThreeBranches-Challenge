@@ -31,7 +31,7 @@ export const PieChart = () => {
           },
         ],
       };
-    return <Flex alignItems="center" justifyContent="center" m="4em" bg="white" w="40%" h="25em">
+    return <Flex borderRadius="10px" alignItems="center" justifyContent="center" m="4em" bg="white" w="40%" h="25em">
         <Pie data={data} />
     </Flex>
 }

@@ -3,7 +3,7 @@ import { Flex, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@ch
 
 export const AuthorPanel = ({authors}) => {
 
-    return <Flex direction="column" bg="white" h="20em" w="30%" mt="4em" ml="3em" mr="1em">
+    return <Flex direction="column" borderRadius="10px" bg="white" h="20em" w="30%" mt="4em" ml="3em" mr="1em">
       <Text>Authors</Text>
         <TableContainer w="100%">
   <Table variant='striped' colorScheme='teal'>
