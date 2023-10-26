@@ -1,11 +1,65 @@
 import { Flex, Image, Text } from "@chakra-ui/react"
 import bookLogo from "../../../assets/book.png"
+import { CloseIcon, EditIcon } from "@chakra-ui/icons"
+import { useContext, useState } from "react"
+import api from "../../../config/api"
+import { toast } from "react-toastify"
+import { BookPopup } from "../bookPopup/BookPopup"
+import ContextConnected from "../../../config/ContextConnected"
 
-export const BookCard = ({details}) => {
+export const BookCard = ({ authors ,updateMode, setUpdateMode ,  deleteMode , setDeleteMode , details}) => {
 
-    return <Flex direction="column" borderRadius="30px" cursor="pointer" bg="white" border="1px solid black" w="15em" alignItems="center" h="80%" justifyItems="center" m="1em">
+    const Connected = useContext(ContextConnected)
+    const [openUpdatePopup , setOpenUpdatePopup] = useState(false)
+
+    const openUpdatePopupHandler = () => {
+        if (openUpdatePopup) {
+            setOpenUpdatePopup(false)
+        } else {
+            setOpenUpdatePopup(true)
+        }
+    }
+
+    const deleteBook = () => {
+        try {
+            const res = api.delete("/book/" + details.id)
+            Connected.setBooks(res.data.data)
+            toast.success("🦄 Agregado con éxito!", {
+                position: "bottom-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+                theme: "dark",
+              });
+        } catch (e) {
+            toast.error(e, {
+                position: "bottom-center",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+                theme: "dark",
+              });
+        }
+    }
+
+    return <Flex direction="column" position="relative" borderRadius="30px" cursor="pointer" bg="white" border="1px solid black" w="10em" _hover={{h:"85%" , w:"11em" , transition:".5s"}} alignItems="center" h="80%" justifyItems="center" m="1em">
+        {
+            deleteMode && <CloseIcon position="absolute" top="10px" left="10px" onClick={deleteBook}/>
+        }
+        {
+            updateMode && <EditIcon position="absolute" top="10px" left="10px" onClick={openUpdatePopupHandler}/>
+        }
+        {
+            openUpdatePopup && <BookPopup setOpenUpdatePopup={setOpenUpdatePopup} authors={authors} editValues={details}/>
+        }
         <Image mt="1em" h="7em" src={bookLogo}/>
-        <Text textAlign="center" color="black" fontSize="2em"> {details.titulo} </Text>
+        <Text textAlign="center" color="black" fontSize="1em"> {details.titulo} </Text>
         <p>{details.fechaPublicacion}</p>
     </Flex>
 }

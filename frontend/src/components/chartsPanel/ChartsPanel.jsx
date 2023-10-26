@@ -4,10 +4,10 @@ import { LineChart } from "./lineChart/LineChart"
 
 
 
-export const ChartsPanel = () => {
+export const ChartsPanel = ({books}) => {
 
     return <Flex h="50em">
-        <PieChart/>
+        <PieChart books={books}/>
         <LineChart/>
     </Flex>
 }
