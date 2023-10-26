@@ -13,10 +13,10 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import api from "../../../config/api";
 import { toast } from "react-toastify";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ContextConnected from "../../../config/ContextConnected";
 import "./bookPopup.css";
-import { MultiSelect } from "react-multi-select-component";
+import { MultiSelect } from "primereact/multiselect";
 
 export const BookPopup = ({
   setOpenUpdatePopup,
@@ -26,6 +26,27 @@ export const BookPopup = ({
 }) => {
   const Connected = useContext(ContextConnected);
   const [multiselectValue, setMultiselectValue] = useState([]);
+  
+    useEffect( ( ) => {
+        const getAuthorsData = () => {
+            if (editValues.authors) {
+              const authorsData = editValues.authors.map((author) => ({
+                nombreCompleto: `${author.nombre} ${author.apellido}`
+              }));
+              setMultiselectValue(authorsData);
+              console.log(multiselectValue); // Loguea aquí
+            }
+          }
+        
+          getAuthorsData();
+          console.log(multiselectValue); // 
+    } , [])
+
+    console.log(multiselectValue); // 
+
+
+  
+
 
   //Init form
   const initialValues = {
@@ -36,8 +57,7 @@ export const BookPopup = ({
 
   //Multiselect options
   const options = authors.map((author) => ({
-    label: author.nombre + " " + author.apellido,
-    value: author.nombre + " " + author.apellido,
+    nombreCompleto: `${author.nombre} ${author.apellido}`,
   }));
 
   console.log(options);
@@ -182,10 +202,12 @@ export const BookPopup = ({
                   />
 
                   <MultiSelect
-                    options={options}
                     value={multiselectValue}
-                    onChange={setMultiselectValue}
-                    labelledBy="Select"
+                    onChange={(e) => setMultiselectValue(e.value)}
+                    options={options}
+                    optionLabel="nombreCompleto"
+                    placeholder="Autor"
+                    className="w-full md:w-20rem"
                   />
                 </InputGroup>
               </div>

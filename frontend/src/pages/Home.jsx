@@ -26,7 +26,7 @@ export const Home = () => {
 
     const getAuthors = async () => {
         const res = await api.get("/author/")
-        setAuthors(res.data.data)
+        setAuthors(res.data.data);
     }
 
     return <Flex direction="column" bg="#F1F1F1" h="100vh">

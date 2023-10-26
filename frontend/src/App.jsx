@@ -6,6 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { MultiSelectTheme } from "chakra-multiselect";
 import ContextConnected from "./config/ContextConnected";
 import { useState } from "react";
+import { PrimeReactProvider } from "primereact/api";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+
 
 function App() {
   const theme = extendTheme({
@@ -14,32 +17,36 @@ function App() {
     },
   });
 
-  const [books,setBooks] = useState([])
-    const [authors,setAuthors] = useState([])
-    const [popupMode , setPopupMode] = useState(false)
+  const [books, setBooks] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [popupMode, setPopupMode] = useState(false);
   return (
-    <ContextConnected.Provider value={{
-      books , 
-      setBooks ,
-      authors , 
-      setAuthors ,
-      popupMode , 
-      setPopupMode
-    }}>
+    <ContextConnected.Provider
+      value={{
+        books,
+        setBooks,
+        authors,
+        setAuthors,
+        popupMode,
+        setPopupMode,
+      }}
+    >
       <ChakraProvider theme={theme}>
-        <Home></Home>
-        <ToastContainer
-          position="bottom-center"
-          autoClose={1000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss={false}
-          draggable={false}
-          pauseOnHover
-          theme="dark"
-        />
+        <PrimeReactProvider>
+          <Home></Home>
+          <ToastContainer
+            position="bottom-center"
+            autoClose={1000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss={false}
+            draggable={false}
+            pauseOnHover
+            theme="dark"
+          />
+        </PrimeReactProvider>
       </ChakraProvider>
     </ContextConnected.Provider>
   );
