@@ -13,10 +13,10 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import api from "../../../config/api";
 import { toast } from "react-toastify";
-import { MultiSelect, useMultiSelect } from "chakra-multiselect";
 import { useContext, useState } from "react";
 import ContextConnected from "../../../config/ContextConnected";
 import "./bookPopup.css";
+import { MultiSelect } from "react-multi-select-component";
 
 export const BookPopup = ({
   setOpenUpdatePopup,
@@ -26,17 +26,21 @@ export const BookPopup = ({
 }) => {
   const Connected = useContext(ContextConnected);
   const [multiselectValue, setMultiselectValue] = useState([]);
+
+  //Init form
   const initialValues = {
     titulo: "",
     fechaPublicacion: "",
     authors: "",
   };
 
-  const { value, options, onChange } = useMultiSelect({
-    value: multiselectValue || "Authors",
-    options: authors.map((author) => author.nombre + " " + author.apellido),
-  });
+  //Multiselect options
+  const options = authors.map((author) => ({
+    label: author.nombre + " " + author.apellido,
+    value: author.nombre + " " + author.apellido,
+  }));
 
+  console.log(options);
   const closePopup = () => {
     if (setSaveMode) {
       setSaveMode(false);
@@ -52,19 +56,25 @@ export const BookPopup = ({
     password: Yup.string().required("Contraseña requerida"),
   }); */
 
-
   const saveNewBook = async (values, { resetForm }) => {
+    console.log("ay si");
     try {
-      const partes = multiselectValue.split(" ");
-      const nombre = partes[0]; // El primer elemento es el nombre
-      const apellido = partes.slice(1).join(" ");
-      const autoresFiltrados = authors.filter((autor) => {
-        return (
-          autor.nombre.toLowerCase() === nombre.toLowerCase() &&
-          autor.apellido.toLowerCase() === apellido.toLowerCase()
-        );
-      });
-      values.authors = autoresFiltrados
+      let autoresSpliteados = [];
+      for (let i = 0; i < multiselectValue.length; i++) {
+        const autoresFiltrados = authors.filter((autor) => {
+          const partes = multiselectValue[i].value.split(" ");
+          const nombre = partes[0]; // El primer elemento es el nombre
+          const apellido = partes.slice(1).join(" ");
+          return (
+            autor.nombre.toLowerCase() === nombre.toLowerCase() &&
+            autor.apellido.toLowerCase() === apellido.toLowerCase()
+          );
+        });
+        // Agregar los autores filtrados al array autoresSpliteados
+        autoresSpliteados = autoresSpliteados.concat(autoresFiltrados);
+      }
+
+      values.authors = autoresSpliteados;
       console.log(values);
       const res = await api.post("/book/", values);
       Connected.setBooks(res.data.data);
@@ -83,6 +93,7 @@ export const BookPopup = ({
       console.log(e);
     }
   };
+
   return (
     <Flex
       className="glass-background"
@@ -172,13 +183,9 @@ export const BookPopup = ({
 
                   <MultiSelect
                     options={options}
-                    value={value}
-                    style={{ color: "white" }}
-                    onChange={(selectedValue) =>
-                      setMultiselectValue(selectedValue)
-                    }
-                    create
-                    single
+                    value={multiselectValue}
+                    onChange={setMultiselectValue}
+                    labelledBy="Select"
                   />
                 </InputGroup>
               </div>
