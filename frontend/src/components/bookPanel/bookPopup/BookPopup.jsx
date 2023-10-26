@@ -26,27 +26,27 @@ export const BookPopup = ({
 }) => {
   const Connected = useContext(ContextConnected);
   const [multiselectValue, setMultiselectValue] = useState([]);
-  
-    useEffect( ( ) => {
-        const getAuthorsData = () => {
-            if (editValues.authors) {
-              const authorsData = editValues.authors.map((author) => ({
-                nombreCompleto: `${author.nombre} ${author.apellido}`
-              }));
-              setMultiselectValue(authorsData);
-              console.log(multiselectValue); // Loguea aquí
-            }
-          }
-        
-          getAuthorsData();
-          console.log(multiselectValue); // 
-    } , [])
 
-    console.log(multiselectValue); // 
+  useEffect(() => {
+    try {
+      const getAuthorsData = () => {
+        if (editValues.authors) {
+          const authorsData = editValues.authors.map((author) => ({
+            nombreCompleto: `${author.nombre} ${author.apellido}`,
+          }));
+          setMultiselectValue(authorsData);
+          console.log(multiselectValue); // Loguea aquí
+        }
+      };
 
+      getAuthorsData();
+      console.log(multiselectValue); //
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
 
-  
-
+  console.log(multiselectValue); //
 
   //Init form
   const initialValues = {
@@ -65,8 +65,9 @@ export const BookPopup = ({
     if (setSaveMode) {
       setSaveMode(false);
     }
-    if (setOpenUpdatePopup) {
-      setOpenUpdatePopup(false);
+    if (Connected.updateMode) {
+      Connected.setUpdateMode(false)
+      Connected.setEditedCard([])
     }
   };
   /*   const validationSchema = Yup.object().shape({
@@ -77,12 +78,11 @@ export const BookPopup = ({
   }); */
 
   const saveNewBook = async (values, { resetForm }) => {
-    console.log("ay si");
     try {
       let autoresSpliteados = [];
       for (let i = 0; i < multiselectValue.length; i++) {
         const autoresFiltrados = authors.filter((autor) => {
-          const partes = multiselectValue[i].value.split(" ");
+          const partes = multiselectValue[i].nombreCompleto.split(" ");
           const nombre = partes[0]; // El primer elemento es el nombre
           const apellido = partes.slice(1).join(" ");
           return (
@@ -95,7 +95,7 @@ export const BookPopup = ({
       }
 
       values.authors = autoresSpliteados;
-      console.log(values);
+
       const res = await api.post("/book/", values);
       Connected.setBooks(res.data.data);
       toast.success("🦄 Agregado con éxito!", {
@@ -114,9 +114,54 @@ export const BookPopup = ({
     }
   };
 
+  const updateBook = async () => {
+    try {
+      let autoresSpliteados = [];
+      for (let i = 0; i < multiselectValue.length; i++) {
+        const autoresFiltrados = authors.filter((autor) => {
+          const partes = multiselectValue[i].value.split(" ");
+          const nombre = partes[0]; // El primer elemento es el nombre
+          const apellido = partes.slice(1).join(" ");
+          return (
+            autor.nombre.toLowerCase() === nombre.toLowerCase() &&
+            autor.apellido.toLowerCase() === apellido.toLowerCase()
+          );
+        });
+        // Agregar los autores filtrados al array autoresSpliteados
+        autoresSpliteados = autoresSpliteados.concat(autoresFiltrados);
+      }
+
+      values.authors = autoresSpliteados;
+      const res = await api.post("/book/", values);
+      Connected.setBooks(res.data.data);
+      toast.success("🦄 Agregado con éxito!", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
+      resetForm();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const saveOrUpdateHandler = (values, { resetForm }) => {
+    if (editValues) {
+      alert("vas a actualizar");
+      updateBook();
+    } else {
+      saveNewBook(values, { resetForm });
+    }
+  };
+
   return (
     <Flex
-      className="glass-background"
+      className="popup"
       bg="black"
       zIndex="100"
       borderRadius="40px"
@@ -147,7 +192,7 @@ export const BookPopup = ({
         <Formik
           initialValues={editValues ? editValues : initialValues}
           /* validationSchema={validationSchema} */
-          onSubmit={saveNewBook}
+          onSubmit={saveOrUpdateHandler}
           validateOnBlur={false}
           validateOnChange={false}
         >

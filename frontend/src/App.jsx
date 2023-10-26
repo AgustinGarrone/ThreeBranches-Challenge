@@ -19,7 +19,8 @@ function App() {
 
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState([]);
-  const [popupMode, setPopupMode] = useState(false);
+  const [updateMode, setUpdateMode] = useState(false);
+  const [editedCard , setEditedCard] = useState([])
   return (
     <ContextConnected.Provider
       value={{
@@ -27,8 +28,10 @@ function App() {
         setBooks,
         authors,
         setAuthors,
-        popupMode,
-        setPopupMode,
+        updateMode,
+        setUpdateMode,
+        editedCard ,
+        setEditedCard
       }}
     >
       <ChakraProvider theme={theme}>

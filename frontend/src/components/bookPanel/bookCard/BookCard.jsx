@@ -10,13 +10,13 @@ import ContextConnected from "../../../config/ContextConnected"
 export const BookCard = ({ authors ,updateMode, setUpdateMode ,  deleteMode , setDeleteMode , details}) => {
 
     const Connected = useContext(ContextConnected)
-    const [openUpdatePopup , setOpenUpdatePopup] = useState(false)
 
     const openUpdatePopupHandler = () => {
-        if (openUpdatePopup) {
-            setOpenUpdatePopup(false)
+        if (Connected.updateMode) {
+            Connected.setUpdateMode(false)
         } else {
-            setOpenUpdatePopup(true)
+            Connected.setEditedCard(details)
+            Connected.setUpdateMode(true)
         }
     }
 
@@ -55,9 +55,7 @@ export const BookCard = ({ authors ,updateMode, setUpdateMode ,  deleteMode , se
         {
             updateMode && <EditIcon position="absolute" top="10px" left="10px" onClick={openUpdatePopupHandler}/>
         }
-        {
-            openUpdatePopup && <BookPopup setOpenUpdatePopup={setOpenUpdatePopup} authors={authors} editValues={details}/>
-        }
+
         <Image mt="1em" h="7em" src={bookLogo}/>
         <Text textAlign="center" color="black" fontSize="1em"> {details.titulo} </Text>
         <p>{details.fechaPublicacion}</p>
