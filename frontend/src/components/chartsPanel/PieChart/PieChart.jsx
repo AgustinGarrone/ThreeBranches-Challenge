@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import ContextConnected from "../../../config/ContextConnected";
 
@@ -8,36 +8,51 @@ export const PieChart = ({ books }) => {
   ChartJS.register(ArcElement, Tooltip, Legend);
 
   const Connected = useContext(ContextConnected);
-  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState({});
+  // Genera una nueva clave (key) cuando cambie filteredBooks
+  const [chartKey, setChartKey] = useState(0);
 
   const filtrarLibrosPorAutor = () => {
     const librosPorAutor = {};
 
-    books.forEach((libro) => {
-      libro.authors.forEach((autor) => {
-        const nombreAutor = `${autor.nombre} ${autor.apellido}`;
-        if (!librosPorAutor[nombreAutor]) {
-          librosPorAutor[nombreAutor] = [];
-        }
-        librosPorAutor[nombreAutor].push(libro);
+    if (Connected.books) {
+      Connected.books.forEach((libro) => {
+        libro.authors.forEach((autor) => {
+          const nombreAutor = `${autor.nombre} ${autor.apellido}`;
+          if (!librosPorAutor[nombreAutor]) {
+            librosPorAutor[nombreAutor] = [];
+          }
+          librosPorAutor[nombreAutor].push(libro);
+        });
       });
-    });
-    console.log(librosPorAutor);
+    } else {
+      books.forEach((libro) => {
+        libro.authors.forEach((autor) => {
+          const nombreAutor = `${autor.nombre} ${autor.apellido}`;
+          if (!librosPorAutor[nombreAutor]) {
+            librosPorAutor[nombreAutor] = [];
+          }
+          librosPorAutor[nombreAutor].push(libro);
+        });
+      });
+    }
     setFilteredBooks(librosPorAutor);
+    // Incrementa el key para forzar la actualización del componente Pie
+    setChartKey((prevKey) => prevKey + 1);
   };
 
-  useState(() => {
+  useEffect(() => {
     filtrarLibrosPorAutor();
-  }, [books, Connected.books]);
+  }, [Connected.books , Connected.cardUpdated]);
 
   const data = {
-    labels: Object.keys(filteredBooks), // Utiliza los años como etiquetas
+    labels: Object.keys(filteredBooks),
     datasets: [
       {
-        label: "Libros publicados ",
+        label: "Libros publicados",
         data: Object.values(filteredBooks).map(
           (booksOfYear) => booksOfYear.length
-        ), // Obtiene la cantidad de libros por año
+        ),
         backgroundColor: [
           "rgba(255, 99, 132, 0.2)",
           "rgba(54, 162, 235, 0.2)",
@@ -58,6 +73,7 @@ export const PieChart = ({ books }) => {
       },
     ],
   };
+
   return (
     <Flex
       borderRadius="10px"
@@ -69,7 +85,7 @@ export const PieChart = ({ books }) => {
       w="40%"
       h="25em"
     >
-      <Pie data={data} />
+      <Pie data={data} key={chartKey} />
     </Flex>
   );
 };

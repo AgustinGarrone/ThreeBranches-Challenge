@@ -21,6 +21,8 @@ function App() {
   const [authors, setAuthors] = useState([]);
   const [updateMode, setUpdateMode] = useState(false);
   const [editedCard , setEditedCard] = useState([])
+  const [pieChart , setPieChart] = useState([])
+  const [cardUpdated , setCardUpdated] = useState([])
   return (
     <ContextConnected.Provider
       value={{
@@ -31,7 +33,11 @@ function App() {
         updateMode,
         setUpdateMode,
         editedCard ,
-        setEditedCard
+        setEditedCard , 
+        pieChart ,
+        setPieChart,
+        cardUpdated , 
+        setCardUpdated
       }}
     >
       <ChakraProvider theme={theme}>

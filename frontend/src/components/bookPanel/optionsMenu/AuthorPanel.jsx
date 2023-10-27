@@ -1,4 +1,5 @@
 import { AddIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import * as Yup from "yup";
 import {
   Button,
   Flex,
@@ -21,10 +22,10 @@ import { useContext, useEffect, useState } from "react";
 import ContextConnected from "../../../config/ContextConnected";
 
 export const AuthorPanel = ({ authors }) => {
-
-  const Connected = useContext(ContextConnected)
+  const Connected = useContext(ContextConnected);
   //Pone inputs en la tabla para editar
-  const [fieldsEditMode, setFieldsEditMode] = useState(false);
+  const [fieldsEditMode, setFieldsEditMode] = useState({});
+
   const initialValues = {
     nombre: "",
     apellido: "",
@@ -33,18 +34,21 @@ export const AuthorPanel = ({ authors }) => {
 
   //Author edit values
   const [values, setValues] = useState({});
+
+  const [editMode , setEditMode] = useState(false)
+
   //Render authors state
   const [localAuthors, setLocalAuthors] = useState(authors);
 
   useEffect(() => {
-    setLocalAuthors(authors)
+    setLocalAuthors(authors);
   }, [authors]);
 
   const addAuthor = async (values, { resetForm }) => {
     try {
       const res = await api.post("/author/", values);
-       // Actualiza el estado local con los nuevos datos
-       setLocalAuthors([...localAuthors, res.data.data]);
+      // Actualiza el estado local con los nuevos datos
+      setLocalAuthors([...localAuthors, res.data.data]);
       toast.success(" Agregado con éxito!", {
         position: "bottom-center",
         autoClose: 1000,
@@ -55,7 +59,6 @@ export const AuthorPanel = ({ authors }) => {
         progress: undefined,
         theme: "dark",
       });
-      
     } catch (e) {
       console.log(e);
     }
@@ -64,9 +67,8 @@ export const AuthorPanel = ({ authors }) => {
   const deleteAuthor = async (id) => {
     try {
       const res = await api.delete("/author/" + id);
-      console.log(res.data);
-       // Actualiza el estado local eliminando el autor con el ID especificado
-       setLocalAuthors(localAuthors.filter((author) => author.id !== id));
+      // Actualiza el estado local eliminando el autor con el ID especificado
+      setLocalAuthors(localAuthors.filter((author) => author.id !== id));
       toast.success("Eliminado correctamente.", {
         position: "bottom-center",
         autoClose: 1000,
@@ -92,40 +94,46 @@ export const AuthorPanel = ({ authors }) => {
   };
 
   const updateAuthorHandler = (author) => {
-    if (fieldsEditMode) {
-      updateAuthor(author);
-      setFieldsEditMode(false);
+    const authorId = author.id
+    setFieldsEditMode((prevState) => ({
+      ...prevState,
+      [authorId]: !prevState[authorId],
+    }));
+    if (editMode) {
+      setEditMode(false)
+      updateAuthor(author)
     } else {
-      setFieldsEditMode(true);
+      setEditMode(true)
     }
   };
 
   const handleInputChange = (e, authorId) => {
     const { name, value } = e.target;
-
-    setValues({
-      ...values,
+  
+    setValues((prevValues) => ({
+      ...prevValues,
       [authorId]: {
-        id: authorId,
+        ...prevValues[authorId],
         [name]: value,
       },
-    });
+    }));
   };
 
   const updateAuthor = async (author) => {
     try {
       const combinedData = {
         id: author.id,
-        nombre: values[author.id]?.nombre || author.nombre,
-        apellido: values[author.id]?.apellido || author.apellido,
-        edad: values[author.id]?.edad || author.edad,
-      }
-      Connected.setAuthors(combinedData)
-      const res = await api.put("/author/" , combinedData);
-      console.log(res.data);
+        nombre: values[author.id] && values[author.id].nombre !== undefined ? values[author.id].nombre : author.nombre,
+        apellido: values[author.id] && values[author.id].apellido !== undefined ? values[author.id].apellido : author.apellido,
+        edad: values[author.id] && values[author.id].edad !== undefined ? values[author.id].edad : author.edad,
+      };
+      Connected.setAuthors(combinedData);
+      const res = await api.put("/author/", combinedData);
       // Actualiza el estado local con los datos actualizados
       const updatedAuthors = localAuthors.map((localAuthor) =>
-        localAuthor.id === author.id ? { ...localAuthor, ...combinedData } : localAuthor
+        localAuthor.id === author.id
+          ? { ...localAuthor, ...combinedData }
+          : localAuthor
       );
       setLocalAuthors(updatedAuthors);
       toast.success("Actualizado correctamente.", {
@@ -177,34 +185,37 @@ export const AuthorPanel = ({ authors }) => {
           <Tbody>
             {localAuthors.map((author) => (
               <Tr key={author.id}>
-                {fieldsEditMode ? (
+                {fieldsEditMode[author.id] ? (
                   <Td>
                     <Input
                       type="text"
+                      color="blue"
                       value={values[author.id]?.nombre || author.nombre}
-                      on={(e) => handleInputChange(e, author.id)}
+                      onChange={(e) => handleInputChange(e, author.id)}
                       name="nombre"
                     />
                   </Td>
                 ) : (
                   <Td>{author.nombre}</Td>
                 )}
-                {fieldsEditMode ? (
+                {fieldsEditMode[author.id] ? (
                   <Td>
                     <Input
                       type="text"
-                      name="apellido"
+                      color="blue"
                       value={values[author.id]?.apellido || author.apellido}
                       onChange={(e) => handleInputChange(e, author.id)}
+                      name="apellido"
                     />
                   </Td>
                 ) : (
                   <Td>{author.apellido}</Td>
                 )}
-                {fieldsEditMode ? (
+                {fieldsEditMode[author.id] ? (
                   <Td>
                     <Input
                       type="text"
+                      color="blue"
                       value={values[author.id]?.edad || author.edad}
                       onChange={(e) => handleInputChange(e, author.id)}
                       name="edad"
@@ -224,6 +235,7 @@ export const AuthorPanel = ({ authors }) => {
                       m=".5em"
                       onClick={() => updateAuthorHandler(author)}
                     ></EditIcon>
+
                     <DeleteIcon
                       onClick={() => deleteAuthor(author.id)}
                       cursor="pointer"

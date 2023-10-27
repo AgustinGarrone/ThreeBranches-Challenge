@@ -10,7 +10,6 @@ import "slick-carousel/slick/slick-theme.css";
 import "@splidejs/react-splide/css/core";
 import Slider from "react-slick";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import ContextConnected from "../../config/ContextConnected";
 
 
@@ -25,12 +24,10 @@ export const BookPanel = ({ books, authors }) => {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 10,
-    slidesToScroll: 5,
+    slidesToShow: 1,
+    slidesToScroll: 4
   };
-
   useEffect(() => {
-
   } , [Connected.books ])
 
   const deleteModeHandler = () => {
@@ -78,15 +75,20 @@ export const BookPanel = ({ books, authors }) => {
         {Connected.updateMode && (
           <BookPopup authors={authors} editValues={Connected.editedCard} />
         )}
-        <Swiper
-          style={{ width: "100%" }}
-          spaceBetween={1}
-          slidesPerView={5}
-          onSlideChange={() => console.log("slide change")}
-          onSwiper={(swiper) => console.log(swiper)}
-        >
-          {books.map((book) => (
-            <SwiperSlide key={book.id}>
+        <Splide
+        options={{
+          width:"100%",
+          gap: "6em",
+          drag: "free",
+          arrows: false,
+          pagination: false,
+          perPage:5,
+          rewind:false
+        }}
+      
+      >
+          {Connected.books.map((book) => (
+                  <SplideSlide  >
               <BookCard
                 authors={authors}
                 updateMode={updateMode}
@@ -95,9 +97,9 @@ export const BookPanel = ({ books, authors }) => {
                 setDeleteMode={setDeleteMode}
                 details={book}
               />
-            </SwiperSlide>
+              </SplideSlide>
           ))}
-        </Swiper>
+        </Splide>
       </Flex>
 
       <Flex alignSelf="flex-end" w="20em">

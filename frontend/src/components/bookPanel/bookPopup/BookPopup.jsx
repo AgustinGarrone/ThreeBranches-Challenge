@@ -7,7 +7,11 @@ import {
   InputLeftAddon,
   Text,
 } from "@chakra-ui/react";
-import { faBook, faCalendarTimes, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBook,
+  faCalendarTimes,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -35,18 +39,14 @@ export const BookPopup = ({
             nombreCompleto: `${author.nombre} ${author.apellido}`,
           }));
           setMultiselectValue(authorsData);
-          console.log(multiselectValue); // Loguea aquí
         }
       };
 
       getAuthorsData();
-      console.log(multiselectValue); //
     } catch (e) {
       console.log(e);
     }
   }, []);
-
-  console.log(multiselectValue); //
 
   //Init form
   const initialValues = {
@@ -60,22 +60,19 @@ export const BookPopup = ({
     nombreCompleto: `${author.nombre} ${author.apellido}`,
   }));
 
-  console.log(options);
   const closePopup = () => {
     if (setSaveMode) {
       setSaveMode(false);
     }
     if (Connected.updateMode) {
-      Connected.setUpdateMode(false)
-      Connected.setEditedCard([])
+      Connected.setUpdateMode(false);
+      Connected.setEditedCard([]);
     }
   };
-  /*   const validationSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("El correo electrónico no es válido")
-      .required("Email requerido"),
-    password: Yup.string().required("Contraseña requerida"),
-  }); */
+  const validationSchema = Yup.object().shape({
+    titulo: Yup.string().required(),
+    fechaPublicacion: Yup.date().required(),
+  });
 
   const saveNewBook = async (values, { resetForm }) => {
     try {
@@ -97,7 +94,8 @@ export const BookPopup = ({
       values.authors = autoresSpliteados;
 
       const res = await api.post("/book/", values);
-      Connected.setBooks(res.data.data);
+       const combinedBooks = [...Connected.books, res.data.data];
+      Connected.setBooks(combinedBooks); 
       toast.success("🦄 Agregado con éxito!", {
         position: "bottom-center",
         autoClose: 1000,
@@ -108,7 +106,7 @@ export const BookPopup = ({
         progress: undefined,
         theme: "dark",
       });
-      setSaveMode(false)
+      setSaveMode(false);
       resetForm();
     } catch (e) {
       console.log(e);
@@ -131,12 +129,17 @@ export const BookPopup = ({
         // Agregar los autores filtrados al array autoresSpliteados
         autoresSpliteados = autoresSpliteados.concat(autoresFiltrados);
       }
-
+  
       values.authors = autoresSpliteados;
-      console.log(values);
       const res = await api.put("/book/", values);
-      Connected.setBooks(res.data.data);
-      toast.success("🦄 Agregado con éxito!", {
+      // Encuentra el índice del libro que deseas actualizar en Connected.books
+      const updatedBookIndex = Connected.books.findIndex((book) => book.id === res.data.data.id); 
+      if (updatedBookIndex !== -1) {
+        // Actualiza el libro antiguo con el nuevo libro
+        Connected.books[updatedBookIndex] = res.data.data;
+      }
+      Connected.setCardUpdated(res.data.data)
+      toast.success("🦄 Actualizado con éxito!", {
         position: "bottom-center",
         autoClose: 1000,
         hideProgressBar: false,
@@ -192,7 +195,7 @@ export const BookPopup = ({
       <div className="container">
         <Formik
           initialValues={editValues ? editValues : initialValues}
-          /* validationSchema={validationSchema} */
+          validationSchema={validationSchema}
           onSubmit={saveOrUpdateHandler}
           validateOnBlur={false}
           validateOnChange={false}
@@ -249,9 +252,10 @@ export const BookPopup = ({
 
                   <MultiSelect
                     value={multiselectValue}
+                    name="autor"
                     onChange={(e) => setMultiselectValue(e.value)}
                     options={options}
-                    style={{width:"13.5em" , height:"2.5em"}}
+                    style={{ width: "13.5em", height: "2.5em" }}
                     optionLabel="nombreCompleto"
                     placeholder="Autor"
                     className="w-full md:w-20rem"

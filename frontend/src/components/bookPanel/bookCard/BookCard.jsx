@@ -25,36 +25,29 @@ export const BookCard = ({
       Connected.setUpdateMode(true);
     }
   };
-
-  const deleteBook = () => {
+  const deleteBookFromState = (bookId) => {
+    Connected.setBooks((prevBooks) => {
+      // Filtra los libros para excluir el que tiene el ID igual a 'bookId'
+      return prevBooks.filter((book) => book.id !== bookId);
+    });
+  };
+  const deleteBook = async () => {
     try {
-      const res = api.delete("/book/" + details.id);
-      // Encuentra el índice del libro a eliminar en el estado books
-      const bookIndex = Connected.books.findIndex(
-        (book) => book.id === details.id
-      );
-
-      if (bookIndex !== -1) {
-        // Crea una nueva matriz de libros sin el libro eliminado
-        const updatedBooks = [
-          ...Connected.books.slice(0, bookIndex),
-          ...Connected.books.slice(bookIndex + 1),
-        ];
-
-        // Actualiza el estado Connected con la nueva matriz de libros
-        Connected.setBooks(updatedBooks);
-
-        toast.success("Eliminado con éxito!", {
-          position: "bottom-center",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-          progress: undefined,
-          theme: "dark",
-        });
-      }
+      const res = await api.delete("/book/" + details.id);
+  
+      // Una vez que la eliminación en la API tiene éxito, procede con la eliminación en el estado local.
+      deleteBookFromState(details.id);
+      
+      toast.success("Eliminado con éxito!", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
     } catch (e) {
       toast.error(e, {
         position: "bottom-center",
@@ -68,7 +61,6 @@ export const BookCard = ({
       });
     }
   };
-
   return (
     <Flex
       direction="column"
@@ -101,12 +93,18 @@ export const BookCard = ({
         />
       )}
 
-      <Image mt="1em" h="7em" src={bookLogo} />
+      <Image mt="1em" h="4em" src={bookLogo} />
       <Text textAlign="center" color="black" fontSize="1em">
         {" "}
         {details.titulo}{" "}
       </Text>
       <p>{details.fechaPublicacion}</p>
+      <Text fontSize=".8em" color="grey" key={authors[0].id}>
+        {`${details.authors[0].nombre} ${details.authors[0].apellido}`}
+        {details.authors.length > 1 && (
+          <span>{` + ${details.authors.length - 1}`}</span>
+        )}
+      </Text>
     </Flex>
   );
 };
