@@ -1,7 +1,9 @@
 package com.example.backend.controllers;
 
 import com.example.backend.entities.Author;
+import com.example.backend.exceptions.HasRelations;
 import com.example.backend.services.AuthorService;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +39,7 @@ public class AuthorController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Map<String , Object>> updateAuthor (@RequestBody Author author) {
+    public ResponseEntity<Map<String , Object>> updateAuthor (@RequestBody Author author) throws HasRelations {
         Map<String , Object> response = new HashMap<>();
         try {
             response.put("data" , authorService.updateAuthor(author));
@@ -102,7 +104,7 @@ public class AuthorController {
             response.put("message" , "Autor eliminado con exito");
             response.put("status" , HttpStatus.OK.value());
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
+        } catch (Exception e ) {
             response.put("data" , "");
             response.put("message" , "Error: " + e.getMessage());
             response.put("status" , HttpStatus.INTERNAL_SERVER_ERROR.value());

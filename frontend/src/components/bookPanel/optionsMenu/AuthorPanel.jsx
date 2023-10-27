@@ -16,18 +16,58 @@ import {
 import api from "../../../config/api";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { faBook } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
+import { useContext, useEffect, useState } from "react";
+import ContextConnected from "../../../config/ContextConnected";
 
 export const AuthorPanel = ({ authors }) => {
+
+  const Connected = useContext(ContextConnected)
+  //Pone inputs en la tabla para editar
+  const [fieldsEditMode, setFieldsEditMode] = useState(false);
   const initialValues = {
     nombre: "",
     apellido: "",
     edad: "",
   };
 
+  //Author edit values
+  const [values, setValues] = useState({});
+  //Render authors state
+  const [localAuthors, setLocalAuthors] = useState(authors);
+
+  useEffect(() => {
+    setLocalAuthors(authors)
+  }, [authors]);
+
   const addAuthor = async (values, { resetForm }) => {
     try {
       const res = await api.post("/author/", values);
-      toast.success("🦄 Agregado con éxito!", {
+       // Actualiza el estado local con los nuevos datos
+       setLocalAuthors([...localAuthors, res.data.data]);
+      toast.success(" Agregado con éxito!", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
+      
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const deleteAuthor = async (id) => {
+    try {
+      const res = await api.delete("/author/" + id);
+      console.log(res.data);
+       // Actualiza el estado local eliminando el autor con el ID especificado
+       setLocalAuthors(localAuthors.filter((author) => author.id !== id));
+      toast.success("Eliminado correctamente.", {
         position: "bottom-center",
         autoClose: 1000,
         hideProgressBar: false,
@@ -38,7 +78,77 @@ export const AuthorPanel = ({ authors }) => {
         theme: "dark",
       });
     } catch (e) {
-      console.log(e);
+      toast.error("Error. intente nuevamente", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
+    }
+  };
+
+  const updateAuthorHandler = (author) => {
+    if (fieldsEditMode) {
+      updateAuthor(author);
+      setFieldsEditMode(false);
+    } else {
+      setFieldsEditMode(true);
+    }
+  };
+
+  const handleInputChange = (e, authorId) => {
+    const { name, value } = e.target;
+
+    setValues({
+      ...values,
+      [authorId]: {
+        id: authorId,
+        [name]: value,
+      },
+    });
+  };
+
+  const updateAuthor = async (author) => {
+    try {
+      const combinedData = {
+        id: author.id,
+        nombre: values[author.id]?.nombre || author.nombre,
+        apellido: values[author.id]?.apellido || author.apellido,
+        edad: values[author.id]?.edad || author.edad,
+      }
+      Connected.setAuthors(combinedData)
+      const res = await api.put("/author/" , combinedData);
+      console.log(res.data);
+      // Actualiza el estado local con los datos actualizados
+      const updatedAuthors = localAuthors.map((localAuthor) =>
+        localAuthor.id === author.id ? { ...localAuthor, ...combinedData } : localAuthor
+      );
+      setLocalAuthors(updatedAuthors);
+      toast.success("Actualizado correctamente.", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
+    } catch (e) {
+      toast.error("Error. intente nuevamente", {
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "dark",
+      });
     }
   };
 
@@ -54,7 +164,7 @@ export const AuthorPanel = ({ authors }) => {
       mr="1em"
     >
       <Text>Authors</Text>
-      <TableContainer h="80%" w="100%" overflowX="scroll">
+      <TableContainer h="80%" w="100%" overflowX="scroll" overflowY="auto">
         <Table variant="striped" colorScheme="teal">
           {/*  <TableCaption>Imperial to metric conversion factors</TableCaption> */}
           <Thead>
@@ -65,19 +175,59 @@ export const AuthorPanel = ({ authors }) => {
             </Tr>
           </Thead>
           <Tbody>
-            {authors.map((author) => (
+            {localAuthors.map((author) => (
               <Tr key={author.id}>
-                <Td>{author.nombre}</Td>
-                <Td>{author.apellido}</Td>
-                <Td isNumeric>{author.edad}</Td>
+                {fieldsEditMode ? (
+                  <Td>
+                    <Input
+                      type="text"
+                      value={values[author.id]?.nombre || author.nombre}
+                      on={(e) => handleInputChange(e, author.id)}
+                      name="nombre"
+                    />
+                  </Td>
+                ) : (
+                  <Td>{author.nombre}</Td>
+                )}
+                {fieldsEditMode ? (
+                  <Td>
+                    <Input
+                      type="text"
+                      name="apellido"
+                      value={values[author.id]?.apellido || author.apellido}
+                      onChange={(e) => handleInputChange(e, author.id)}
+                    />
+                  </Td>
+                ) : (
+                  <Td>{author.apellido}</Td>
+                )}
+                {fieldsEditMode ? (
+                  <Td>
+                    <Input
+                      type="text"
+                      value={values[author.id]?.edad || author.edad}
+                      onChange={(e) => handleInputChange(e, author.id)}
+                      name="edad"
+                    />
+                  </Td>
+                ) : (
+                  <Td isNumeric>{author.edad}</Td>
+                )}
                 <Td>
                   <Flex
                     direction="column"
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <EditIcon cursor="pointer" m=".5em"></EditIcon>
-                    <DeleteIcon cursor="pointer"></DeleteIcon>
+                    <EditIcon
+                      cursor="pointer"
+                      m=".5em"
+                      onClick={() => updateAuthorHandler(author)}
+                    ></EditIcon>
+                    <DeleteIcon
+                      onClick={() => deleteAuthor(author.id)}
+                      cursor="pointer"
+                    ></DeleteIcon>
                   </Flex>
                 </Td>
               </Tr>

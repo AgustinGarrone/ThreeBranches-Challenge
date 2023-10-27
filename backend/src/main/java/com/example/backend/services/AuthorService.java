@@ -1,6 +1,7 @@
 package com.example.backend.services;
 
 import com.example.backend.entities.Author;
+import com.example.backend.exceptions.HasRelations;
 import com.example.backend.repositories.AuthorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,8 +35,8 @@ public class AuthorService {
     }
 
     public Author updateAuthor (Author author) {
-        Optional<Author> oldBook = authorRepository.findById(author.getId());
-        if (oldBook.isPresent()) {
+        Optional<Author> oldAuthor = authorRepository.findById(author.getId());
+        if (oldAuthor.isPresent()) {
             try {
                 return authorRepository.save(author);
             } catch (Exception e) {
@@ -45,11 +46,11 @@ public class AuthorService {
         return null;
     }
 
-    public void deleteAuthor (Long id) {
+    public void deleteAuthor (Long id) throws HasRelations {
         try {
             authorRepository.deleteById(id);
         } catch (Exception e) {
-            System.out.println(e);
+            throw new HasRelations();
         }
 
     }

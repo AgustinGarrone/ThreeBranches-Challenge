@@ -1,22 +1,21 @@
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { BookCard } from "./bookCard/BookCard";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import api from "../../config/api";
 import { BookPopup } from "./bookPopup/BookPopup";
 import { Splide, SplideSlide } from "@splidejs/react-splide";
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-
-// or only core styles
-import '@splidejs/react-splide/css/core';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "@splidejs/react-splide/css/core";
 import Slider from "react-slick";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 import ContextConnected from "../../config/ContextConnected";
-export const BookPanel = ({ books, authors }) => {
 
-  const Connected = useContext(ContextConnected)
+
+export const BookPanel = ({ books, authors }) => {
+  const Connected = useContext(ContextConnected);
 
   const [deleteMode, setDeleteMode] = useState(false);
   const [saveMode, setSaveMode] = useState(false);
@@ -27,13 +26,18 @@ export const BookPanel = ({ books, authors }) => {
     infinite: true,
     speed: 500,
     slidesToShow: 10,
-    slidesToScroll: 5
+    slidesToScroll: 5,
   };
+
+  useEffect(() => {
+
+  } , [Connected.books ])
 
   const deleteModeHandler = () => {
     if (deleteMode) {
       setDeleteMode(false);
     } else {
+      setUpdateMode(false)
       setDeleteMode(true);
     }
   };
@@ -48,13 +52,12 @@ export const BookPanel = ({ books, authors }) => {
 
   const updateBook = () => {
     if (updateMode) {
-      setUpdateMode(false);
+      setUpdateMode(false)
     } else {
+      setDeleteMode(false);
       setUpdateMode(true);
     }
   };
-
-
 
   return (
     <Flex
@@ -70,33 +73,32 @@ export const BookPanel = ({ books, authors }) => {
       <Text ml="3em" color="white" fontSize="2em">
         Books
       </Text>
-      <Flex ml="3em" borderRadius="10px" bg="white" w="90%" >
-  {saveMode && <BookPopup authors={authors} setSaveMode={setSaveMode} />}
-  {
-    Connected.updateMode && <BookPopup  authors={authors} editValues={Connected.editedCard}/>
-  }
-  <Swiper
-      spaceBetween={10}
-      slidesPerView={5}
-      onSlideChange={() => console.log('slide change')}
-      onSwiper={(swiper) => console.log(swiper)}
-    >
-        {books.map((book) => (
-          <SwiperSlide key={book.id}>
-          <BookCard
-            authors={authors}
-            updateMode={updateMode}
-            setUpdateMode={setUpdateMode}
-            deleteMode={deleteMode}
-            setDeleteMode={setDeleteMode}
-            details={book}
-           
-          />
-          </SwiperSlide>
-        ))}
-    
-  </Swiper>
-</Flex>
+      <Flex ml="3em" borderRadius="10px" bg="white" w="90%">
+        {saveMode && <BookPopup authors={authors} setSaveMode={setSaveMode} />}
+        {Connected.updateMode && (
+          <BookPopup authors={authors} editValues={Connected.editedCard} />
+        )}
+        <Swiper
+          style={{ width: "100%" }}
+          spaceBetween={1}
+          slidesPerView={5}
+          onSlideChange={() => console.log("slide change")}
+          onSwiper={(swiper) => console.log(swiper)}
+        >
+          {books.map((book) => (
+            <SwiperSlide key={book.id}>
+              <BookCard
+                authors={authors}
+                updateMode={updateMode}
+                setUpdateMode={setUpdateMode}
+                deleteMode={deleteMode}
+                setDeleteMode={setDeleteMode}
+                details={book}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </Flex>
 
       <Flex alignSelf="flex-end" w="20em">
         <Button m=".8em" onClick={saveBook}>

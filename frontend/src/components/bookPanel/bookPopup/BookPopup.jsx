@@ -7,7 +7,7 @@ import {
   InputLeftAddon,
   Text,
 } from "@chakra-ui/react";
-import { faBook, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBook, faCalendarTimes, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -108,18 +108,19 @@ export const BookPopup = ({
         progress: undefined,
         theme: "dark",
       });
+      setSaveMode(false)
       resetForm();
     } catch (e) {
       console.log(e);
     }
   };
 
-  const updateBook = async () => {
+  const updateBook = async (values, { resetForm }) => {
     try {
       let autoresSpliteados = [];
       for (let i = 0; i < multiselectValue.length; i++) {
         const autoresFiltrados = authors.filter((autor) => {
-          const partes = multiselectValue[i].value.split(" ");
+          const partes = multiselectValue[i].nombreCompleto.split(" ");
           const nombre = partes[0]; // El primer elemento es el nombre
           const apellido = partes.slice(1).join(" ");
           return (
@@ -132,7 +133,8 @@ export const BookPopup = ({
       }
 
       values.authors = autoresSpliteados;
-      const res = await api.post("/book/", values);
+      console.log(values);
+      const res = await api.put("/book/", values);
       Connected.setBooks(res.data.data);
       toast.success("🦄 Agregado con éxito!", {
         position: "bottom-center",
@@ -152,8 +154,7 @@ export const BookPopup = ({
 
   const saveOrUpdateHandler = (values, { resetForm }) => {
     if (editValues) {
-      alert("vas a actualizar");
-      updateBook();
+      updateBook(values, { resetForm });
     } else {
       saveNewBook(values, { resetForm });
     }
@@ -186,7 +187,7 @@ export const BookPopup = ({
         <Text color="white" fontSize="1.5em" textAlign="center">
           Guardar libro
         </Text>
-        <CloseIcon color="white" onClick={closePopup} />
+        <CloseIcon cursor="pointer" color="white" onClick={closePopup} />
       </Flex>
       <div className="container">
         <Formik
@@ -223,7 +224,7 @@ export const BookPopup = ({
                 <InputGroup>
                   <InputLeftAddon
                     borderRadius="0"
-                    children={<FontAwesomeIcon icon={faBook} />}
+                    children={<FontAwesomeIcon icon={faCalendarTimes} />}
                   />
                   <Field name="fechaPublicacion">
                     {({ field }) => (
@@ -250,6 +251,7 @@ export const BookPopup = ({
                     value={multiselectValue}
                     onChange={(e) => setMultiselectValue(e.value)}
                     options={options}
+                    style={{width:"13.5em" , height:"2.5em"}}
                     optionLabel="nombreCompleto"
                     placeholder="Autor"
                     className="w-full md:w-20rem"
