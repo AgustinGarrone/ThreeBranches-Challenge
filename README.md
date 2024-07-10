@@ -7,5 +7,6 @@ Allows you to create , update or delete books and authors and get statistics fro
 
 
 
-https://github.com/AgustinGarrone/ThreeBranches-Challenge/assets/75916775/17ec9c96-9fe6-4e88-9200-666451f05f04
+
+<!-- https://github.com/AgustinGarrone/ThreeBranches-Challenge/assets/75916775/17ec9c96-9fe6-4e88-9200-666451f05f04 -->
 
